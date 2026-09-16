@@ -1,0 +1,10 @@
+mod_name = "Team Voided Template"
+mod_id = "template"
+mod_group = "org.teamvoided"
+mod_version = "1.0.0"
+mod_description = "Template Mod Description"
+github_repo = "Teamvoided/TeamVoidedTemplateMod"
+discord_invite = "https://discord.gg/KZ5Q364hEg"
+authors = [ "TheEnderCore" ]
+license = "MIT"
+version_range = ">=1.21.1 <1.21.2"

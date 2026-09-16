@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [ "${authors}" ],
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "org.teamvoided.template.Template::init"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "org.teamvoided.template.client.TemplateClient::init"
+      }
+    ]
+  },
+  "mixins": [
+    "template.mixins.json",
+    {
+      "config": "template.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "accessWidener": "template.classtweaker",
+  "depends": {
+    "java": ">=${java}",
+    "minecraft": "${version_range}",
+    "fabricloader": "*",
+    "fabric-api": "*",
+    "fabric-language-kotlin": ">=${fabric_kotlin}",
+    "fzzy_config": ">=${fzzy_config}"
+  },
+  "contact": {
+    "homepage": "https://github.com/${github_repo}",
+    "issues": "https://github.com/${github_repo}/issues",
+    "sources": "https://github.com/${github_repo}",
+    "discord": "${discord_invite}"
+  },
+  "license": "${license}",
+  "icon": "assets/template/icon.png"
+}

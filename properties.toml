@@ -1,7 +1,7 @@
 mod_name = "Magnify"
 mod_id = "magnify"
 mod_group = "org.teamvoided"
-mod_version = "1.0.0"
+mod_version = "1.0.2"
 mod_description = "Template Mod Description"
 github_repo = "Teamvoided/TeamVoidedTemplateMod"
 discord_invite = "https://discord.gg/KZ5Q364hEg"

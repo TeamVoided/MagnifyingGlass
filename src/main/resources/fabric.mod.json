@@ -20,13 +20,13 @@
     ]
   },
   "mixins": [
-    "template.mixins.json",
+    "magnify.mixins.json",
     {
-      "config": "template.client.mixins.json",
+      "config": "magnify.client.mixins.json",
       "environment": "client"
     }
   ],
-  "accessWidener": "template.classtweaker",
+  "accessWidener": "magnify.classtweaker",
   "depends": {
     "java": ">=${java}",
     "minecraft": "${version_range}",
@@ -42,5 +42,5 @@
     "discord": "${discord_invite}"
   },
   "license": "${license}",
-  "icon": "assets/template/icon.png"
+  "icon": "assets/magnify/icon.png"
 }

@@ -1,9 +1,6 @@
 package org.teamvoided.template
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
@@ -14,39 +11,34 @@ import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.teamvoided.template.config.TemplateConfig
-import java.util.*
+import org.teamvoided.template.payloads.ClientBoundOminousItemsPayload
+import org.teamvoided.template.payloads.ServerBoundRequestOminousItemsPayload
 
 object Template {
 
-    const val MODID = "template"
+    const val MODID = "magnify"
 
     @JvmField
     val log: Logger = LoggerFactory.getLogger(Template::class.simpleName)
 
-    @JvmField
-    var config = ConfigApi.registerAndLoadConfig(::TemplateConfig)
-
-    var items: List<ItemStack?>? = null
-    var oldPlayerPoses = mutableMapOf<UUID, BlockPos>() // TODO cache invalidation :) or better make it so the client toggles it
+    var items: List<ItemStack>? = null // This is only used clientside
 
     fun init() {
-        log.info("Hello from Common ${config.commonEntry.get()}")
-        ConfigApiJava.network().registerS2C(
-            ClientBoundLootPayload.TYPE,
-            ClientBoundLootPayload.STREAM_CODEC
+        ConfigApi.network().registerS2C(
+            ClientBoundOminousItemsPayload.TYPE,
+            ClientBoundOminousItemsPayload.STREAM_CODEC
         ) { payload, context -> context.execute { items = payload.items } }
-
-        ServerTickEvents.END_WORLD_TICK.register { serverLevel ->
-            serverLevel.players().forEach {
-                if (oldPlayerPoses[it.uuid] != it.blockPosition()) {
-                    oldPlayerPoses[it.uuid] = it.blockPosition()
-                    if (!ConfigApiJava.network().canSend(ClientBoundLootPayload.TYPE.id, it)) return@forEach
-                    ServerPlayNetworking.send(
-                        it,
-                        ClientBoundLootPayload(getDispensingItems(serverLevel, it.blockPosition()))
-                    )
-                }
+        ConfigApi.network().registerC2S(
+            ServerBoundRequestOminousItemsPayload.TYPE,
+            ServerBoundRequestOminousItemsPayload.STREAM_CODEC,
+        ) { payload, context ->
+            context.execute {
+                val player = context.player()
+                if (!ConfigApi.network().canSend(ClientBoundOminousItemsPayload.TYPE.id, player)) return@execute
+                ConfigApi.network().send(
+                    ClientBoundOminousItemsPayload(getDispensingItems(player.serverLevel(), player.blockPosition())),
+                    player
+                )
             }
         }
     }
@@ -54,22 +46,21 @@ object Template {
     fun getDispensingItems(
         serverLevel: ServerLevel,
         blockPos: BlockPos
-    ): List<ItemStack?> {
+    ): List<ItemStack> {
         val lootTable =
             serverLevel.server.reloadableRegistries()
                 .getLootTable(BuiltInLootTables.SPAWNER_TRIAL_ITEMS_TO_DROP_WHEN_OMINOUS)
         val lootParams = (LootParams.Builder(serverLevel)).create(LootContextParamSets.EMPTY)
-        val seed = lowResolutionPosition(serverLevel, blockPos)
+        val seed = serverLevel.seed + spawnerSectionPos(blockPos).asLong()
         return lootTable.getRandomItems(lootParams, seed)
     }
 
-    private fun lowResolutionPosition(serverLevel: ServerLevel, blockPos: BlockPos): Long {
-        val blockPos2 = BlockPos(
+    fun spawnerSectionPos(blockPos: BlockPos): BlockPos {
+        return BlockPos(
             Mth.floor(blockPos.x.toFloat() / 30f),
             Mth.floor(blockPos.y.toFloat() / 20f),
             Mth.floor(blockPos.z.toFloat() / 30f)
         )
-        return serverLevel.seed + blockPos2.asLong()
     }
 
     fun id(namespace: String, path: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(namespace, path)

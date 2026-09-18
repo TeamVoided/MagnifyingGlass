@@ -2,10 +2,12 @@ package org.teamvoided.template
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import net.minecraft.core.BlockPos
+import net.minecraft.core.component.DataComponents
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.Mth
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.storage.loot.BuiltInLootTables
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
@@ -13,6 +15,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.teamvoided.template.payloads.ClientBoundOminousItemsPayload
 import org.teamvoided.template.payloads.ServerBoundRequestOminousItemsPayload
+import java.util.Collections
+import java.util.function.UnaryOperator
 
 object Template {
 
@@ -52,7 +56,14 @@ object Template {
                 .getLootTable(BuiltInLootTables.SPAWNER_TRIAL_ITEMS_TO_DROP_WHEN_OMINOUS)
         val lootParams = (LootParams.Builder(serverLevel)).create(LootContextParamSets.EMPTY)
         val seed = serverLevel.seed + spawnerSectionPos(blockPos).asLong()
-        return lootTable.getRandomItems(lootParams, seed)
+        val stacks = lootTable.getRandomItems(lootParams, seed)
+        stacks.toList().forEach { stack ->
+            if (stack.item == Items.ARROW && stack.has(DataComponents.POTION_CONTENTS)) {
+                stacks.remove(stack)
+                stacks.add(stack.transmuteCopy(Items.TIPPED_ARROW))
+            }
+        }
+        return stacks
     }
 
     fun spawnerSectionPos(blockPos: BlockPos): BlockPos {

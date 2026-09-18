@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
-import net.minecraft.world.item.Items
 import org.teamvoided.template.Template
 import org.teamvoided.template.config.TemplateConfig
 import org.teamvoided.template.payloads.ServerBoundRequestOminousItemsPayload
@@ -24,15 +23,16 @@ object TemplateClient {
         Template.log.info("Hello from Client")
         ClientTickEvents.END_WORLD_TICK.register {
             if (!config.displayOminousItems) return@register
-            val pos = Minecraft.getInstance().gameRenderer.mainCamera.blockPosition ?: return@register
+            val pos = Minecraft.getInstance().gameRenderer.mainCamera.blockPosition.immutable() ?: return@register
             if (pos != oldPos) {
                 oldPos = pos
 
                 val sectionPos = Template.spawnerSectionPos(pos)
                 if (oldSectionPos != sectionPos) {
                     oldSectionPos = sectionPos
+
                     if (ConfigApi.network().canSend(ServerBoundRequestOminousItemsPayload.TYPE.id, null)) {
-                        ConfigApi.network().send(ServerBoundRequestOminousItemsPayload.INSTANCE, null)
+                        ConfigApi.network().send(ServerBoundRequestOminousItemsPayload(pos), null)
                     }
                 }
             }

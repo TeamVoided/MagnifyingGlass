@@ -13,7 +13,7 @@ class ClientBoundOminousItemsPayload(val items: List<ItemStack>) : CustomPacketP
     override fun type(): Type<out CustomPacketPayload?> = TYPE
 
     companion object {
-        val TYPE: Type<ClientBoundOminousItemsPayload> = Type(Template.id("items"))
+        val TYPE: Type<ClientBoundOminousItemsPayload> = Type(Template.id("ominous_spawner_items"))
         val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, ClientBoundOminousItemsPayload> = StreamCodec.composite(
             ByteBufCodecs.list<RegistryFriendlyByteBuf, ItemStack>().apply(ItemStack.STREAM_CODEC),
             ClientBoundOminousItemsPayload::items,

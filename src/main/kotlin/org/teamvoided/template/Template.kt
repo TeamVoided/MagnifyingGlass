@@ -36,7 +36,7 @@ object Template {
                 val player = context.player()
                 if (!ConfigApi.network().canSend(ClientBoundOminousItemsPayload.TYPE.id, player)) return@execute
                 ConfigApi.network().send(
-                    ClientBoundOminousItemsPayload(getDispensingItems(player.serverLevel(), player.blockPosition())),
+                    ClientBoundOminousItemsPayload(getDispensingItems(player.serverLevel(), payload.pos)),
                     player
                 )
             }
